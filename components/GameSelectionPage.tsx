@@ -26,13 +26,41 @@ const DEFAULT_THEMES = {
     secondaryColor: "#03DAC6",
     textColor: "#FFFFFF",
   },
+  neon: {
+    backgroundColor: "#000000",
+    primaryColor: "#00FF00",
+    secondaryColor: "#FF00FF",
+    textColor: "#FFFFFF",
+  },
+  pastel: {
+    backgroundColor: "#F0F4F8",
+    primaryColor: "#B5EAD7",
+    secondaryColor: "#FFB7B2",
+    textColor: "#666666",
+  },
+  halloween: {
+    backgroundColor: "#1A1A1A",
+    primaryColor: "#FF6B00",
+    secondaryColor: "#8B00FF",
+    textColor: "#FFFFFF",
+  },
 };
+
+// Add theme interface
+interface Theme {
+  backgroundColor: string;
+  primaryColor: string;
+  secondaryColor: string;
+  textColor: string;
+}
 
 // Placeholder Game Components (to be replaced with actual component imports)
 
 const GameSelectionPage: React.FC = () => {
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
   const [selectedTheme, setSelectedTheme] = useState("classic");
+  const [customTheme, setCustomTheme] = useState<Theme | null>(null);
+  const [isCustomizing, setIsCustomizing] = useState(false);
 
   const games = [
     { name: "Snake", component: SnakeGame },
@@ -42,8 +70,97 @@ const GameSelectionPage: React.FC = () => {
     { name: "Puzzle", component: PuzzleGame },
   ];
 
+  const renderThemeCustomizer = () => {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          backgroundColor: "white",
+          padding: "20px",
+          borderRadius: "10px",
+          boxShadow: "0 0 10px rgba(0,0,0,0.5)",
+          zIndex: 1000,
+        }}
+      >
+        <h2>Customize Theme</h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <div>
+            <label>Background Color:</label>
+            <input
+              type="color"
+              value={customTheme?.backgroundColor || "#FFFFFF"}
+              onChange={(e) =>
+                setCustomTheme((prev) => ({
+                  ...(prev as Theme),
+                  backgroundColor: e.target.value,
+                }))
+              }
+            />
+          </div>
+          <div>
+            <label>Primary Color:</label>
+            <input
+              type="color"
+              value={customTheme?.primaryColor || "#3498db"}
+              onChange={(e) =>
+                setCustomTheme((prev) => ({
+                  ...(prev as Theme),
+                  primaryColor: e.target.value,
+                }))
+              }
+            />
+          </div>
+          <div>
+            <label>Secondary Color:</label>
+            <input
+              type="color"
+              value={customTheme?.secondaryColor || "#2ecc71"}
+              onChange={(e) =>
+                setCustomTheme((prev) => ({
+                  ...(prev as Theme),
+                  secondaryColor: e.target.value,
+                }))
+              }
+            />
+          </div>
+          <div>
+            <label>Text Color:</label>
+            <input
+              type="color"
+              value={customTheme?.textColor || "#333333"}
+              onChange={(e) =>
+                setCustomTheme((prev) => ({
+                  ...(prev as Theme),
+                  textColor: e.target.value,
+                }))
+              }
+            />
+          </div>
+          <button
+            onClick={() => setIsCustomizing(false)}
+            style={{
+              backgroundColor: "#f44336",
+              color: "white",
+              border: "none",
+              padding: "10px",
+              borderRadius: "5px",
+              marginTop: "10px",
+            }}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   const renderGameSelection = () => {
-    const theme = DEFAULT_THEMES[selectedTheme as keyof typeof DEFAULT_THEMES];
+    const theme =
+      customTheme ||
+      DEFAULT_THEMES[selectedTheme as keyof typeof DEFAULT_THEMES];
 
     return (
       <div
@@ -80,6 +197,23 @@ const GameSelectionPage: React.FC = () => {
               ))}
             </select>
           </label>
+          <button
+            onClick={() => {
+              setCustomTheme(theme);
+              setIsCustomizing(true);
+            }}
+            style={{
+              backgroundColor: theme.primaryColor,
+              color: theme.backgroundColor,
+              border: "none",
+              padding: "5px 10px",
+              borderRadius: "5px",
+              marginLeft: "10px",
+              cursor: "pointer",
+            }}
+          >
+            Customize Theme
+          </button>
         </div>
 
         <div
@@ -137,7 +271,12 @@ const GameSelectionPage: React.FC = () => {
     ) : null;
   };
 
-  return selectedGame ? renderSelectedGame() : renderGameSelection();
+  return (
+    <>
+      {isCustomizing && renderThemeCustomizer()}
+      {selectedGame ? renderSelectedGame() : renderGameSelection()}
+    </>
+  );
 };
 
 export default GameSelectionPage;
