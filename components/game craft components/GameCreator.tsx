@@ -182,11 +182,6 @@ export default function GameCreator() {
     }
   };
 
-  const handleCroppedImage = useCallback((croppedImage: string) => {
-    setCustomImage(croppedImage);
-    setIsCropperOpen(false);
-  }, []);
-
   const handleGenerateGame = () => {
     const gameId = Math.random().toString(36).substr(2, 9);
     setGameUrl(`https://example.com/play/${gameId}`);
