@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { ThemeContext } from "../GameSelectionPage";
 
 const DEFAULT_THEMES = {
   classic: {
@@ -19,7 +20,7 @@ const TicTacToe: React.FC = () => {
   const [board, setBoard] = useState(Array(9).fill(null));
   const [xIsNext, setXIsNext] = useState(true);
   const [winner, setWinner] = useState<string | null>(null);
-  const theme = DEFAULT_THEMES.classic;
+  const theme = useContext(ThemeContext);
 
   const calculateWinner = (squares: (string | null)[]) => {
     const lines = [
@@ -73,8 +74,10 @@ const TicTacToe: React.FC = () => {
         height: "100px",
         fontSize: "2rem",
         backgroundColor: board[i] ? theme.primaryColor : theme.backgroundColor,
-        color: board[i] === "X" ? "white" : theme.secondaryColor,
+        color: board[i] ? theme.backgroundColor : theme.textColor,
         border: `2px solid ${theme.primaryColor}`,
+        cursor: "pointer",
+        fontFamily: theme.fontFamily,
       }}
     >
       {board[i]}
@@ -90,13 +93,18 @@ const TicTacToe: React.FC = () => {
         backgroundColor: theme.backgroundColor,
         color: theme.textColor,
         padding: "20px",
+        fontFamily: theme.fontFamily,
       }}
     >
-      <h2 style={{ color: theme.textColor }}>Tic-Tac-Toe</h2>
+      <h2 style={{ color: theme.textColor }}>
+        {theme.decorativeEmoji} Tic-Tac-Toe {theme.decorativeEmoji}
+      </h2>
 
       {winner ? (
-        <div>
-          <p>Winner: {winner}</p>
+        <div style={{ textAlign: "center" }}>
+          <p>
+            {theme.decorativeEmoji} Winner: {winner} {theme.decorativeEmoji}
+          </p>
           <button
             onClick={resetGame}
             style={{
@@ -105,13 +113,18 @@ const TicTacToe: React.FC = () => {
               border: "none",
               padding: "10px 20px",
               borderRadius: "5px",
+              cursor: "pointer",
+              fontFamily: theme.fontFamily,
             }}
           >
-            Reset Game
+            {theme.decorativeEmoji} Reset Game {theme.decorativeEmoji}
           </button>
         </div>
       ) : (
-        <p>Next Player: {xIsNext ? "X" : "O"}</p>
+        <p>
+          {theme.decorativeEmoji} Next Player: {xIsNext ? "X" : "O"}{" "}
+          {theme.decorativeEmoji}
+        </p>
       )}
 
       <div

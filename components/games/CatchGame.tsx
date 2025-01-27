@@ -1,25 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
-
-const DEFAULT_THEMES = {
-  classic: {
-    backgroundColor: "#FFFFFF",
-    primaryColor: "#3498db",
-    secondaryColor: "#2ecc71",
-    textColor: "#333333",
-  },
-  valentines: {
-    backgroundColor: "#FFE4E1",
-    primaryColor: "#FF69B4",
-    secondaryColor: "#FF1493",
-    textColor: "#8B008B",
-  },
-};
+import React, { useState, useEffect, useRef, useContext } from "react";
+import { ThemeContext } from "../GameSelectionPage";
 
 const CatchGame: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
-  const theme = DEFAULT_THEMES.valentines;
+  const theme = useContext(ThemeContext);
 
   const CANVAS_WIDTH = 400;
   const CANVAS_HEIGHT = 400;
@@ -132,10 +118,15 @@ const CatchGame: React.FC = () => {
         backgroundColor: theme.backgroundColor,
         color: theme.textColor,
         padding: "20px",
+        fontFamily: theme.fontFamily,
       }}
     >
-      <h2>Catch Game</h2>
-      <p>Score: {score}</p>
+      <h2>
+        {theme.decorativeEmoji} Catch Game {theme.decorativeEmoji}
+      </h2>
+      <p>
+        {theme.decorativeEmoji} Score: {score} {theme.decorativeEmoji}
+      </p>
       <canvas
         ref={canvasRef}
         width={CANVAS_WIDTH}
@@ -143,8 +134,10 @@ const CatchGame: React.FC = () => {
         style={{ border: `2px solid ${theme.primaryColor}` }}
       />
       {gameOver && (
-        <div>
-          <p>Game Over!</p>
+        <div style={{ textAlign: "center" }}>
+          <p>
+            {theme.decorativeEmoji} Game Over! {theme.decorativeEmoji}
+          </p>
           <button
             onClick={resetGame}
             style={{
@@ -153,9 +146,11 @@ const CatchGame: React.FC = () => {
               border: "none",
               padding: "10px 20px",
               borderRadius: "5px",
+              cursor: "pointer",
+              fontFamily: theme.fontFamily,
             }}
           >
-            Restart
+            {theme.decorativeEmoji} Restart {theme.decorativeEmoji}
           </button>
         </div>
       )}

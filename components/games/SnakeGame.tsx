@@ -3,60 +3,13 @@ import React, {
   useEffect,
   useRef,
   useCallback,
-  createContext,
+  useContext,
 } from "react";
-
-// Theme Context and Types
-interface GameTheme {
-  backgroundColor: string;
-  primaryColor: string;
-  secondaryColor: string;
-  textColor: string;
-  fontFamily?: string;
-}
-
-interface GameConfig {
-  theme: GameTheme;
-  customImages?: {
-    background?: string;
-    player?: string;
-    obstacle?: string;
-  };
-  difficulty?: "easy" | "medium" | "hard";
-}
-
-const DEFAULT_THEMES = {
-  classic: {
-    backgroundColor: "#FFFFFF",
-    primaryColor: "#3498db",
-    secondaryColor: "#2ecc71",
-    textColor: "#333333",
-  },
-  valentines: {
-    backgroundColor: "#FFE4E1",
-    primaryColor: "#FF69B4",
-    secondaryColor: "#FF1493",
-    textColor: "#8B008B",
-  },
-};
-
-const GameConfigContext = createContext<{
-  config: GameConfig;
-  updateConfig: (newConfig: Partial<GameConfig>) => void;
-}>({
-  config: {
-    theme: DEFAULT_THEMES.classic,
-  },
-  updateConfig: () => {},
-});
+import { ThemeContext } from "../GameSelectionPage";
 
 const SnakeGame: React.FC = () => {
+  const theme = useContext(ThemeContext);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [config] = useState<GameConfig>({
-    theme: DEFAULT_THEMES.classic,
-  });
-  const theme = config.theme;
-
   const [snake, setSnake] = useState<{ x: number; y: number }[]>([
     { x: 10, y: 10 },
   ]);
@@ -186,7 +139,7 @@ const SnakeGame: React.FC = () => {
     }, 200);
 
     return () => clearInterval(gameLoop);
-  }, [snake, direction, food, gameOver]);
+  }, [snake, direction, food, gameOver, generateFood]);
 
   const resetGame = () => {
     setSnake([{ x: 10, y: 10 }]);
@@ -205,9 +158,12 @@ const SnakeGame: React.FC = () => {
         backgroundColor: theme.backgroundColor,
         color: theme.textColor,
         padding: "20px",
+        fontFamily: theme.fontFamily,
       }}
     >
-      <h2 style={{ color: theme.textColor }}>Snake Game</h2>
+      <h2 style={{ color: theme.textColor }}>
+        {theme.decorativeEmoji} Snake Game {theme.decorativeEmoji}
+      </h2>
       <p style={{ color: theme.textColor }}>Score: {score}</p>
       <canvas
         ref={canvasRef}
@@ -216,8 +172,10 @@ const SnakeGame: React.FC = () => {
         style={{ border: `2px solid ${theme.primaryColor}` }}
       />
       {gameOver && (
-        <div>
-          <p style={{ color: theme.textColor }}>Game Over!</p>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ color: theme.textColor }}>
+            {theme.decorativeEmoji} Game Over! {theme.decorativeEmoji}
+          </p>
           <button
             onClick={resetGame}
             style={{
@@ -226,9 +184,11 @@ const SnakeGame: React.FC = () => {
               border: "none",
               padding: "10px 20px",
               borderRadius: "5px",
+              cursor: "pointer",
+              fontFamily: theme.fontFamily,
             }}
           >
-            Restart
+            {theme.decorativeEmoji} Restart {theme.decorativeEmoji}
           </button>
         </div>
       )}

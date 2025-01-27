@@ -1,23 +1,9 @@
-import React, { useState, useEffect } from "react";
-
-const DEFAULT_THEMES = {
-  classic: {
-    backgroundColor: "#FFFFFF",
-    primaryColor: "#3498db",
-    secondaryColor: "#2ecc71",
-    textColor: "#333333",
-  },
-  valentines: {
-    backgroundColor: "#FFE4E1",
-    primaryColor: "#FF69B4",
-    secondaryColor: "#FF1493",
-    textColor: "#8B008B",
-  },
-};
+import React, { useState, useEffect, useContext } from "react";
+import { ThemeContext } from "../GameSelectionPage";
 
 const PuzzleGame: React.FC = () => {
   const GRID_SIZE = 4;
-  const theme = DEFAULT_THEMES.valentines;
+  const theme = useContext(ThemeContext);
 
   const createSolvedPuzzle = () =>
     Array.from({ length: GRID_SIZE * GRID_SIZE }, (_, i) => i);
@@ -85,14 +71,22 @@ const PuzzleGame: React.FC = () => {
         backgroundColor: theme.backgroundColor,
         color: theme.textColor,
         padding: "20px",
+        fontFamily: theme.fontFamily,
       }}
     >
-      <h2>Sliding Puzzle</h2>
-      <p>Moves: {moves}</p>
+      <h2>
+        {theme.decorativeEmoji} Sliding Puzzle {theme.decorativeEmoji}
+      </h2>
+      <p>
+        {theme.decorativeEmoji} Moves: {moves} {theme.decorativeEmoji}
+      </p>
 
       {isGameSolved() && (
-        <div>
-          <p>Congratulations! Puzzle Solved!</p>
+        <div style={{ textAlign: "center" }}>
+          <p>
+            {theme.decorativeEmoji} Congratulations! Puzzle Solved!{" "}
+            {theme.decorativeEmoji}
+          </p>
           <button
             onClick={resetGame}
             style={{
@@ -101,9 +95,11 @@ const PuzzleGame: React.FC = () => {
               border: "none",
               padding: "10px 20px",
               borderRadius: "5px",
+              cursor: "pointer",
+              fontFamily: theme.fontFamily,
             }}
           >
-            New Puzzle
+            {theme.decorativeEmoji} New Puzzle {theme.decorativeEmoji}
           </button>
         </div>
       )}
@@ -124,16 +120,18 @@ const PuzzleGame: React.FC = () => {
             disabled={tile === 0 || isGameSolved()}
             style={{
               backgroundColor: tile === 0 ? "transparent" : theme.primaryColor,
-              color: theme.backgroundColor,
+              color: tile === 0 ? "transparent" : theme.backgroundColor,
               border: `2px solid ${theme.secondaryColor}`,
               fontSize: "2rem",
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
               cursor: tile === 0 ? "default" : "pointer",
+              fontFamily: theme.fontFamily,
+              transition: "all 0.3s ease",
             }}
           >
-            {tile !== 0 ? tile : ""}
+            {tile !== 0 ? `${theme.decorativeEmoji}${tile}` : ""}
           </button>
         ))}
       </div>

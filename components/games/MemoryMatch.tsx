@@ -1,23 +1,9 @@
-import React, { useState, useEffect } from "react";
-
-const DEFAULT_THEMES = {
-  classic: {
-    backgroundColor: "#FFFFFF",
-    primaryColor: "#3498db",
-    secondaryColor: "#2ecc71",
-    textColor: "#333333",
-  },
-  valentines: {
-    backgroundColor: "#FFE4E1",
-    primaryColor: "#FF69B4",
-    secondaryColor: "#FF1493",
-    textColor: "#8B008B",
-  },
-};
+import React, { useState, useEffect, useContext } from "react";
+import { ThemeContext } from "../GameSelectionPage";
 
 const MemoryMatch: React.FC = () => {
   const CARD_SYMBOLS = ["❤️", "🌹", "💘", "🍫", "💕", "🎁", "💌", "🦄"];
-  const theme = DEFAULT_THEMES.valentines;
+  const theme = useContext(ThemeContext);
 
   const [cards, setCards] = useState<
     { symbol: string; isFlipped: boolean; isMatched: boolean }[]
@@ -77,14 +63,22 @@ const MemoryMatch: React.FC = () => {
         backgroundColor: theme.backgroundColor,
         color: theme.textColor,
         padding: "20px",
+        fontFamily: theme.fontFamily,
       }}
     >
-      <h2>Memory Match</h2>
-      <p>Moves: {moves}</p>
+      <h2>
+        {theme.decorativeEmoji} Memory Match {theme.decorativeEmoji}
+      </h2>
+      <p>
+        {theme.decorativeEmoji} Moves: {moves} {theme.decorativeEmoji}
+      </p>
 
       {isGameComplete && (
-        <div>
-          <p>Congratulations! You won in {moves} moves!</p>
+        <div style={{ textAlign: "center" }}>
+          <p>
+            {theme.decorativeEmoji} Congratulations! You won in {moves} moves!{" "}
+            {theme.decorativeEmoji}
+          </p>
           <button
             onClick={resetGame}
             style={{
@@ -93,9 +87,11 @@ const MemoryMatch: React.FC = () => {
               border: "none",
               padding: "10px 20px",
               borderRadius: "5px",
+              cursor: "pointer",
+              fontFamily: theme.fontFamily,
             }}
           >
-            Play Again
+            {theme.decorativeEmoji} Play Again {theme.decorativeEmoji}
           </button>
         </div>
       )}
@@ -125,12 +121,18 @@ const MemoryMatch: React.FC = () => {
                   ? theme.primaryColor
                   : theme.backgroundColor,
               color:
-                card.isFlipped || card.isMatched ? "white" : theme.textColor,
+                card.isFlipped || card.isMatched
+                  ? theme.backgroundColor
+                  : theme.textColor,
               border: `2px solid ${theme.primaryColor}`,
               cursor: "pointer",
+              fontFamily: theme.fontFamily,
+              transition: "all 0.3s ease",
             }}
           >
-            {card.isFlipped || card.isMatched ? card.symbol : "?"}
+            {card.isFlipped || card.isMatched
+              ? card.symbol
+              : theme.decorativeEmoji}
           </div>
         ))}
       </div>
