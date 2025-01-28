@@ -1,9 +1,9 @@
-import GameCreator from "@/components/game craft components/GameCreator";
 
-export default function Home() {
+
+export default function Create() {
   return (
     <main>
-      <GameCreator />
+      You are on the home page
     </main>
   );
 }

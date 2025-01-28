@@ -7,6 +7,12 @@ import GameSelector from "./GameSelector";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import SnakeGame from "../games/SnakeGame";
+import TicTacToe from "../games/TicTacToe";
+import CatchGame from "../games/CatchGame";
+import MemoryMatch from "../games/MemoryMatch";
+import PuzzleGame from "../games/PuzzleGame";
+import { createClient } from "@/utils/supabase/client";
 
 const DEFAULT_THEMES = {
   Valentines: {
@@ -149,6 +155,9 @@ export default function GameCreator() {
   const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
   const [isCropperOpen, setIsCropperOpen] = useState(false);
   const [imageToEdit, setImageToEdit] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     setCustomTheme(DEFAULT_THEMES[selectedTheme]);
@@ -172,19 +181,90 @@ export default function GameCreator() {
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImageToEdit(reader.result as string);
-        setIsCropperOpen(true);
-      };
-      reader.readAsDataURL(file);
+    setPreviewError(null);
+
+    if (!file) {
+      return;
     }
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      setPreviewError("Please select an image file");
+      return;
+    }
+
+    // Validate file size (5MB)
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+    if (file.size > MAX_FILE_SIZE) {
+      setPreviewError("Image size must be less than 5MB");
+      return;
+    }
+
+    setIsLoading(true);
+    const reader = new FileReader();
+
+    reader.onloadstart = () => {
+      setIsLoading(true);
+    };
+
+    reader.onloadend = () => {
+      setIsLoading(false);
+      setCustomImage(reader.result as string);
+    };
+
+    reader.onerror = () => {
+      setIsLoading(false);
+      setPreviewError("Error reading file");
+    };
+
+    reader.readAsDataURL(file);
   };
 
-  const handleGenerateGame = () => {
-    const gameId = Math.random().toString(36).substr(2, 9);
-    setGameUrl(`https://example.com/play/${gameId}`);
+  const handleGenerateGame = async () => {
+    try {
+      const supabase = createClient();
+      // Generate a random password for the game
+      const gamePass = Math.random().toString(36).substr(2, 9);
+      let imagePath = null;
+
+      // If there's a custom image, upload it to storage first
+      if (customImage) {
+        const imageFile = await fetch(customImage).then((res) => res.blob());
+        const fileExt = customImage.split(";")[0].split("/")[1];
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `game-images/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("images")
+          .upload(filePath, imageFile, {
+            contentType: `image/${fileExt}`,
+          });
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        imagePath = filePath;
+      }
+
+      // Insert game data into the games table with only the theme name
+      const { error: insertError } = await supabase.from("games").insert({
+        theme: selectedTheme,
+        pass: gamePass,
+        game: selectedGame.name,
+        img: imagePath,
+      });
+
+      if (insertError) {
+        throw insertError;
+      }
+
+      setGameUrl(`${window.location.origin}/play/${gamePass}`);
+      setShowPreview(true);
+    } catch (error) {
+      console.error("Error creating game:", error);
+      alert("Failed to create game. Please try again.");
+    }
   };
 
   const handleCopyLink = () => {
@@ -192,6 +272,80 @@ export default function GameCreator() {
       navigator.clipboard.writeText(gameUrl);
       alert("Game link copied to clipboard!");
     }
+  };
+
+  const GamePreview = () => {
+    const previewStyle = {
+      backgroundColor: customTheme.backgroundColor,
+      color: customTheme.textColor,
+      fontFamily: customTheme.fontFamily,
+      opacity: 0.8,
+      border: `2px solid ${customTheme.primaryColor}`,
+      borderRadius: "8px",
+      padding: "20px",
+      margin: "20px 0",
+      position: "relative" as const,
+    };
+
+    const overlayStyle = {
+      position: "absolute" as const,
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "transparent",
+      cursor: "not-allowed",
+      zIndex: 10,
+    };
+
+    const getGameComponent = () => {
+      switch (selectedGame.name) {
+        case "Snake":
+          return (
+            <div className="relative">
+              <div style={overlayStyle}></div>
+              <SnakeGame />
+            </div>
+          );
+        case "Tic Tac Toe":
+          return (
+            <div className="relative">
+              <div style={overlayStyle}></div>
+              <TicTacToe />
+            </div>
+          );
+        case "Catch Game":
+          return (
+            <div className="relative">
+              <div style={overlayStyle}></div>
+              <CatchGame />
+            </div>
+          );
+        case "Match Making":
+          return (
+            <div className="relative">
+              <div style={overlayStyle}></div>
+              <MemoryMatch />
+            </div>
+          );
+        case "Puzzle Game":
+          return (
+            <div className="relative">
+              <div style={overlayStyle}></div>
+              <PuzzleGame />
+            </div>
+          );
+        default:
+          return null;
+      }
+    };
+
+    return (
+      <div style={previewStyle}>
+        <h3 className="text-xl font-semibold mb-4 text-center">Game Preview</h3>
+        {getGameComponent()}
+      </div>
+    );
   };
 
   return (
@@ -232,21 +386,36 @@ export default function GameCreator() {
             </h2>
           </div>
           <div className="space-y-4">
-            <Input
-              type="file"
-              id="custom-image"
-              name="custom-image"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="cursor-pointer"
-            />
-            {customImage && (
+            <div className="flex flex-col gap-4">
+              <Input
+                type="file"
+                id="custom-image"
+                name="custom-image"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="cursor-pointer"
+                disabled={isLoading}
+              />
+              {isLoading && (
+                <p className="text-sm text-muted-foreground">
+                  Loading image...
+                </p>
+              )}
+              {previewError && (
+                <p className="text-sm text-red-500">{previewError}</p>
+              )}
+            </div>
+
+            {customImage && !previewError && (
               <div className="mt-4">
-                <img
-                  src={customImage}
-                  alt="Custom game image"
-                  className="w-32 h-32 object-cover rounded-lg"
-                />
+                <p className="text-sm text-muted-foreground mb-2">Preview:</p>
+                <div className="relative w-32 h-32 rounded-lg overflow-hidden">
+                  <img
+                    src={customImage}
+                    alt="Custom game image"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -268,7 +437,7 @@ export default function GameCreator() {
           />
         </Card>
 
-        <div className="flex justify-center gap-4">
+        <div className="flex flex-col items-center gap-4">
           <Button
             size="lg"
             onClick={handleGenerateGame}
@@ -300,6 +469,7 @@ export default function GameCreator() {
               </svg>
             </Button>
           )}
+          {showPreview && <GamePreview />}
         </div>
       </div>
     </div>

@@ -12,6 +12,9 @@ export default async function AuthButton() {
 
   return user ? (
     <div className="flex items-center justify-between ">
+      <Link href="/create" className="mr-8 hover:underline">
+        Create
+      </Link>
       <Link href="/home" className="mr-8 hover:underline">
         Home
       </Link>

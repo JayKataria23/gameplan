@@ -68,6 +68,7 @@ const TicTacToe: React.FC = () => {
 
   const renderSquare = (i: number) => (
     <button
+      key={i}
       onClick={() => handleClick(i)}
       style={{
         width: "100px",

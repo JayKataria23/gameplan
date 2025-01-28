@@ -18,7 +18,7 @@ export function Hero() {
           </div>
           <div className="space-x-4">
             <Button asChild>
-              <Link href="/home">Create Your Game</Link>
+              <Link href="/create">Create Your Game</Link>
             </Button>
             <Button variant="outline" asChild>
               <Link href="/explore">Explore Games</Link>
